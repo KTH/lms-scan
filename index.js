@@ -4,8 +4,9 @@ const path = require('path')
 const { format } = require('util')
 
 function searchToken (filePath) {
+  const reg = /8779~\w+/g
   const content = fs.readFileSync(filePath, 'utf8')
-  return content.indexOf('8779~') !== -1
+  return content.match(reg) || []
 }
 
 /** Returs a plain list of all the files on a directory (incl. subdirectories) */
@@ -27,10 +28,16 @@ function walk (dirPath) {
 }
 
 const files = walk(process.cwd())
-const filesDetected = files
-  .map(f => ({filepath: f, found: searchToken(f)}))
-  .filter(f => f.found)
+const vulnerabilities = files
+  .map(f => ({filepath: f, secrets: searchToken(f)}))
+  .filter(f => f.secrets.length > 0)
 
-for (const file of filesDetected) {
-  console.log(format(`[${file.filepath}]`))
+for (const entry of vulnerabilities) {
+  console.log(format(`[${entry.filepath}]`))
+
+  for (const secret of entry.secrets) {
+    console.log(`>> ${secret}`)
+  }
+
+  console.log('')
 }
