@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs')
 const path = require('path')
+const { format } = require('util')
 
 function searchToken (filePath) {
   const content = fs.readFileSync(filePath, 'utf8')
@@ -26,10 +27,10 @@ function walk (dirPath) {
 }
 
 const files = walk(process.cwd())
-console.log('Scanning %d files', files.length)
-const warnings = files.filter(searchToken)
-console.log('Found %d problematic files', warnings.length)
+const filesDetected = files
+  .map(f => ({filepath: f, found: searchToken(f)}))
+  .filter(f => f.found)
 
-for (const file of warnings) {
-  console.log(file)
+for (const file of filesDetected) {
+  console.log(format(`[${file.filepath}]`))
 }
