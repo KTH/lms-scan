@@ -34,7 +34,7 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
   for (const commit of commits) {
     await git.checkout(commit.hash)
     console.group(`Commit ${commit.hash}`)
-    scanDirectory(repoPath)
+    scanDirectory(repoPath, (p) => git.checkIgnore(p))
     console.groupEnd()
   }
 

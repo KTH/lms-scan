@@ -9,7 +9,7 @@ function searchToken (filePath) {
 }
 
 /** Returs a plain list of all the files on a directory (incl. subdirectories) */
-function walk (dirPath) {
+async function walk (dirPath, exclude = () => false) {
   let files = []
 
   for (const fileName of fs.readdirSync(dirPath)) {
@@ -17,8 +17,8 @@ function walk (dirPath) {
     const isDirectory = fs.statSync(filePath).isDirectory()
 
     if (isDirectory) {
-      files = files.concat(walk(filePath))
-    } else {
+      files = files.concat(await walk(filePath))
+    } else if (! await exclude(filePath)){
       files.push(filePath)
     }
   }
@@ -26,8 +26,8 @@ function walk (dirPath) {
   return files
 }
 
-module.exports = function scanDirectory (dirPath) {
-  const files = walk(dirPath)
+module.exports = async function scanDirectory (dirPath) {
+  const files = await walk(dirPath)
   const vulnerabilities = files
     .map(f => ({filepath: f, secrets: searchToken(f)}))
     .filter(f => f.secrets.length > 0)
