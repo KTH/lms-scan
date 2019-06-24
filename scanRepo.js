@@ -3,6 +3,17 @@ const scanDirectory = require('./scanDirectory')
 const fs = require('fs')
 const path = require('path')
 
+async function getCurrentHead (git) {
+  const status = await git.status()
+
+  if (status.current === 'HEAD') {
+    const log = await git.log({n: 1})
+    return log.latest.hash
+  } else {
+    return status.current
+  }
+}
+
 module.exports = async function scanRepo (repoPath, {from, to} = {}) {
   const git = simpleGit(repoPath)
 
@@ -16,11 +27,7 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
     console.log(`The repo [${repoPath}] is not clean.`)
   }
 
-  let reference = status.current
-  if (status.current === 'HEAD') {
-    reference = (await git.log({n: 1})).latest.hash
-  }
-
+  const head = await getCurrentHead(git)
   const commits = (await git.log({from, to})).all
   const problems = []
 
@@ -31,5 +38,5 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
     console.groupEnd()
   }
 
-  await git.checkout(reference)
+  await git.checkout(head)
 }
