@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const { format } = require('util')
 
 function searchToken (filePath) {
   const reg = /8779~\w+/g
@@ -34,14 +33,5 @@ module.exports = async function scanDirectory (dirPath, exclude) {
     .map(f => ({ filepath: f, secrets: searchToken(f) }))
     .filter(f => f.secrets.length > 0)
 
-  for (const entry of vulnerabilities) {
-    console.log(format(`[${entry.filepath}]`))
-
-    for (const secret of entry.secrets) {
-      console.log(`>> ${secret}`)
-    }
-
-    console.log('')
-  }
   return vulnerabilities
 }
