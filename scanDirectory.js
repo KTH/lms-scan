@@ -16,18 +16,20 @@ async function walk (dirPath, exclude = () => false) {
     const filePath = path.join(dirPath, fileName)
     const isDirectory = fs.statSync(filePath).isDirectory()
 
-    if (isDirectory) {
-      files = files.concat(await walk(filePath))
-    } else if (! await exclude(filePath)){
-      files.push(filePath)
+    if (! await exclude(filePath)) {
+      if (isDirectory) {
+        files = files.concat(await walk(filePath, exclude))
+      } else {
+        files.push(filePath)
+      }
     }
   }
 
   return files
 }
 
-module.exports = async function scanDirectory (dirPath) {
-  const files = await walk(dirPath)
+module.exports = async function scanDirectory (dirPath, exclude) {
+  const files = await walk(dirPath, exclude)
   const vulnerabilities = files
     .map(f => ({filepath: f, secrets: searchToken(f)}))
     .filter(f => f.secrets.length > 0)
@@ -41,4 +43,5 @@ module.exports = async function scanDirectory (dirPath) {
 
     console.log('')
   }
+  return vulnerabilities
 }
