@@ -29,14 +29,21 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
 
   const head = await getCurrentHead(git)
   const commits = (await git.log({from, to})).all
-  const problems = []
+  let vulnerabilities = []
 
   for (const commit of commits) {
     await git.checkout(commit.hash)
     console.group(`Commit ${commit.hash}`)
-    scanDirectory(repoPath, (p) => git.checkIgnore(p))
+    const vuls = (await scanDirectory(repoPath, (p) => git.checkIgnore(p)))
+      .map(v => ({
+        commit: commit.hash,
+          ...v
+      }))
+
+    vulnerabilities = vulnerabilities.concat(vuls)
     console.groupEnd()
   }
 
   await git.checkout(head)
+  return vulnerabilities
 }
