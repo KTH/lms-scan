@@ -6,10 +6,11 @@ if (process.argv.length > 3 && process.argv[2] === 'history') {
   const found = process.argv[3].match(/(\w+)\.\.\.(\w+)/)
   if (found === null) {
     console.log('Format not valid')
-    return
+    process.exit(1)
   }
-  const [_, from, to] = found
-  scanRepo(process.cwd(), {from, to})
-  return
+
+  const [, from, to] = found
+  scanRepo(process.cwd(), { from, to })
+  process.exit(0)
 }
 scanDirectory(process.cwd())

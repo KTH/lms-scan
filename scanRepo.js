@@ -1,34 +1,32 @@
 const simpleGit = require('simple-git/promise')
 const scanDirectory = require('./scanDirectory')
-const fs = require('fs')
-const path = require('path')
 
 async function getCurrentHead (git) {
   const status = await git.status()
 
   if (status.current === 'HEAD') {
-    const log = await git.log({n: 1})
+    const log = await git.log({ n: 1 })
     return log.latest.hash
   } else {
     return status.current
   }
 }
 
-module.exports = async function scanRepo (repoPath, {from, to} = {}) {
+module.exports = async function scanRepo (repoPath, { from, to } = {}) {
   const git = simpleGit(repoPath)
 
-  if (! (await git.checkIsRepo())) {
+  if (!(await git.checkIsRepo())) {
     console.log(`Directory [${repoPath}] is not a git repository`)
   }
 
   const status = await git.status()
 
-  if (! status.isClean()) {
+  if (!status.isClean()) {
     console.log(`The repo [${repoPath}] is not clean.`)
   }
 
   const head = await getCurrentHead(git)
-  const commits = (await git.log({from, to})).all
+  const commits = (await git.log({ from, to })).all
   let vulnerabilities = []
 
   for (const commit of commits) {
@@ -37,7 +35,7 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
     const vuls = (await scanDirectory(repoPath, (p) => git.checkIgnore(p)))
       .map(v => ({
         commit: commit.hash,
-          ...v
+        ...v
       }))
 
     vulnerabilities = vulnerabilities.concat(vuls)
