@@ -10,13 +10,17 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
     console.log(`Directory [${repoPath}] is not a git repository`)
   }
 
-  if (! (await git.status()).isClean()) {
+  const status = await git.status()
+
+  if (! status.isClean()) {
     console.log(`The repo [${repoPath}] is not clean.`)
   }
 
-  // Save the current "HEAD" to restore it after traversing
-  const headPath = path.resolve(repoPath, '.git/HEAD')
-  const headContent = fs.readFileSync(path.resolve(repoPath, '.git/HEAD'))
+  let reference = status.current
+  if (status.current === 'HEAD') {
+    reference = (await git.log({n: 1})).latest.hash
+  }
+
   const commits = (await git.log({from, to})).all
   const problems = []
 
@@ -27,5 +31,5 @@ module.exports = async function scanRepo (repoPath, {from, to} = {}) {
     console.groupEnd()
   }
 
-  fs.writeFileSync(headPath, headContent)
+  await git.checkout(reference)
 }
