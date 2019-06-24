@@ -3,7 +3,7 @@ const scanDirectory = require('./scanDirectory')
 const scanRepo = require('./scanRepo')
 
 if (process.argv.length > 3 && process.argv[2] === 'history') {
-  const found = process.argv[3].match(/(\w+)\.\.(\w+)/)
+  const found = process.argv[3].match(/(\w+)\.\.\.(\w+)/)
   if (found === null) {
     console.log('Format not valid')
     return
