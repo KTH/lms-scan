@@ -8,5 +8,8 @@
   },
   "author": "",
   "bin": "./index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "simple-git": "^1.116.0"
+  }
 }
