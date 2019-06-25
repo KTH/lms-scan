@@ -1,11 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-
-function searchToken (filePath) {
-  const reg = /8779~\w+/g
-  const content = fs.readFileSync(filePath, 'utf8')
-  return content.match(reg) || []
-}
+const searchToken = require('./searchToken')
 
 /** Returs a plain list of all the files on a directory (incl. subdirectories) */
 async function walk (dirPath, exclude = () => false) {
