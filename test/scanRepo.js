@@ -23,7 +23,7 @@ test('Scanner detects tokens that no longer exist', async t => {
   const vulnerabilities = await scanRepo(fakeDir, { from: '4c56649', to: '17d808f' })
   const tokens = vulnerabilities
     .filter(v => v.filepath.includes('file-with-secrets'))
-    .map(v => v.tokens)
+    .map(v => v.secrets)
     .reduce((a, v) => a.concat(v), [])
 
   t.assert(tokens.includes('8779~thisisatoken'))
@@ -32,13 +32,13 @@ test('Scanner detects tokens that no longer exist', async t => {
 
 test('Scanner detects tokens that are in files deleted afterwards', async t => {
   const vulnerabilities = await scanRepo(fakeDir, { from: '6db4646', to: '3931ee0' })
-  const secrets = vulnerabilities
+  const vv = vulnerabilities
     .filter(v => v.filepath.includes('even-more-secret-file'))
-    .map(v => ({ commit: v.commit, tokens: v.tokens }))
+    .map(v => ({ commit: v.commit, secrets: v.secrets }))
 
-  t.deepEqual(secrets, [{
+  t.deepEqual(vv, [{
     commit: '147bef2e1496474d39503adf2b94d8dc9174045a',
-    tokens: [
+    secrets: [
       '8779~thisisatoken'
     ]
   }])
