@@ -12,7 +12,9 @@ if (process.argv.length > 3 && process.argv[2] === 'history') {
 
   const [, from, to] = found
   scanRepo(process.cwd(), { from, to })
-    .then(() => process.exit(0))
+    .then((vulnerabilities) => {
+      console.log(vulnerabilities)
+    })
     .catch(e => {
       if (e.name === 'GitRootNotFoundError') {
         console.error(`Directory [${process.cwd()}] is not part of any git repo`)

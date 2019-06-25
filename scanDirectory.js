@@ -25,7 +25,7 @@ async function walk (dirPath, exclude = () => false) {
 module.exports = async function scanDirectory (dirPath, exclude) {
   const files = await walk(dirPath, exclude)
   const vulnerabilities = files
-    .map(f => ({ filepath: f, secrets: searchToken(f) }))
+    .map(f => ({ filepath: f, secrets: searchToken.inFile(f) }))
     .filter(f => f.secrets.length > 0)
 
   return vulnerabilities
