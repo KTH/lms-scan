@@ -30,3 +30,7 @@ test('Scanner detects tokens that no longer exist', async t => {
   t.assert(tokens.includes('8779~this_is_also_a_token'))
   t.pass()
 })
+
+test('Scanner detects tokens that are in files deleted afterwards', async t => {
+  const vulnerabilities = await scanRepo(fakeDir, { from: '147bef2', to: '' })
+})
