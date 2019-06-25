@@ -19,7 +19,14 @@ test('Calling "scanRepo" with non-ancestor commits throws', async t => {
   await t.throwsAsync(() => scanRepo(fakeDir, { from: '6c4f8df', to: 'e4f270e' }))
 })
 
-test('Happy path', async t => {
-  await scanRepo(fakeDir, { from: '4c56649', to: '17d808f' })
+test('Scanner detects tokens that no longer exist', async t => {
+  const vulnerabilities = await scanRepo(fakeDir, { from: '4c56649', to: '17d808f' })
+  const tokens = vulnerabilities
+    .filter(v => v.filepath.includes('file-with-secrets'))
+    .map(v => v.tokens)
+    .reduce((a, v) => a.concat(v), [])
+
+  t.assert(tokens.includes('8779~thisisatoken'))
+  t.assert(tokens.includes('8779~this_is_also_a_token'))
   t.pass()
 })
