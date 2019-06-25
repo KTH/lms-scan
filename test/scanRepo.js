@@ -28,9 +28,18 @@ test('Scanner detects tokens that no longer exist', async t => {
 
   t.assert(tokens.includes('8779~thisisatoken'))
   t.assert(tokens.includes('8779~this_is_also_a_token'))
-  t.pass()
 })
 
 test('Scanner detects tokens that are in files deleted afterwards', async t => {
-  const vulnerabilities = await scanRepo(fakeDir, { from: '147bef2', to: '' })
+  const vulnerabilities = await scanRepo(fakeDir, { from: '6db4646', to: '3931ee0' })
+  const secrets = vulnerabilities
+    .filter(v => v.filepath.includes('even-more-secret-file'))
+    .map(v => ({ commit: v.commit, tokens: v.tokens }))
+
+  t.deepEqual(secrets, [{
+    commit: '147bef2e1496474d39503adf2b94d8dc9174045a',
+    tokens: [
+      '8779~thisisatoken'
+    ]
+  }])
 })
