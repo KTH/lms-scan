@@ -12,18 +12,26 @@ if (process.argv.length > 3 && process.argv[2] === 'history') {
 
   const [, from, to] = found
   scanRepo(process.cwd(), { from, to })
-  process.exit(0)
-}
-
-scanDirectory(process.cwd())
-  .then(vulnerabilities => {
-    for (const entry of vulnerabilities) {
-      console.log(format(`[${entry.filepath}]`))
-
-      for (const secret of entry.secrets) {
-        console.log(`>> ${secret}`)
+    .then(() => process.exit(0))
+    .catch(e => {
+      if (e.name === 'GitRootNotFoundError') {
+        console.error(`Directory [${process.cwd()}] is not part of any git repo`)
+        process.exit(1)
       }
+      console.error(e)
+      process.exit(1)
+    })
+} else {
+  scanDirectory(process.cwd())
+    .then(vulnerabilities => {
+      for (const entry of vulnerabilities) {
+        console.log(format(`[${entry.filepath}]`))
 
-      console.log('')
-    }
-  })
+        for (const secret of entry.secrets) {
+          console.log(`>> ${secret}`)
+        }
+
+        console.log('')
+      }
+    })
+}

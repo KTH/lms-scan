@@ -16,6 +16,17 @@ async function getCurrentHead (git) {
 */
 
 module.exports = async function scanRepo (repoPath, { from, to } = {}) {
-  await git.findRoot({ filepath: repoPath })
+  const repoRoot = await git.findRoot({ filepath: repoPath })
+
+  if (from && to) {
+    const ancestor = await git.expandOid({ dir: repoRoot, oid: from })
+    const oid = await git.expandOid({ dir: repoRoot, oid: to })
+    const isDescendent = await git.isDescendent({ dir: repoRoot, oid, ancestor })
+    if (!isDescendent) {
+      const e = Error(`Commit ${from} is not ascendent of ${to}`)
+      e.type = 'NotAscendingCommit'
+      throw e
+    }
+  }
   // const files = await git.listFiles({ dir: repoRoot, ref: 'HEAD' })
 }
