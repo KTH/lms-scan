@@ -1,53 +1,50 @@
 #!/usr/bin/env node
 const scanDirectory = require('./scanDirectory')
 const scanRepo = require('./scanRepo')
-const { format } = require('util')
 
-if (process.argv.length >= 3 && process.argv[2] === 'history') {
-  let result
-  if (process.argv.length >= 4) {
-    const found = process.argv[3].match(/(\w+)\.\.\.(\w+)/)
-    if (found === null) {
-      console.log('Format not valid')
-      process.exit(1)
+function printVulnerabilities (vulnerabilities) {
+  for (const entry of vulnerabilities) {
+    if (entry.commit) {
+      console.log(`[commit ${entry.commit}]`)
     }
-    const [, from, to] = found
-    result = scanRepo(process.cwd(), { from, to })
-  } else {
-    result = scanRepo(process.cwd())
+    console.log(`[${entry.filepath}]`)
+
+    for (const secret of entry.secrets) {
+      console.log(`>> ${secret}`)
+    }
+    console.log('')
   }
+}
 
-  result
-    .then((vulnerabilities) => {
-      for (const entry of vulnerabilities) {
-        console.log(format(`[commit: ${entry.commit}]`))
-        console.log(format(`[${entry.filepath}]`))
-
-        for (const secret of entry.secrets) {
-          console.log(`>> ${secret}`)
-        }
-        console.log()
-      }
-    })
-    .catch(e => {
-      if (e.name === 'GitRootNotFoundError') {
-        console.error(`Directory [${process.cwd()}] is not part of any git repo`)
+// eslint-disable-next-line no-unused-expressions
+require('yargs')
+  .usage('Usage: $0')
+  .usage('Usage: $0 history [range]')
+  .command('$0', 'Scan the current directory', () => {}, async (argv) => {
+    const found = await scanDirectory(process.cwd())
+    printVulnerabilities(found)
+    process.exit(found.length === 0 ? 0 : 1)
+  })
+  .command('history [range]', 'Scan the current repository', () => {}, async (argv) => {
+    let found
+    if (argv.range) {
+      const range = argv.range.match(/(\w+)\.\.\.(\w+)/)
+      if (range === null) {
+        console.log(`Unable to parse the range "${argv.range}". The format must be "<start>...<end>"`)
         process.exit(1)
       }
-      console.error(e)
-      process.exit(1)
-    })
-} else {
-  scanDirectory(process.cwd())
-    .then(vulnerabilities => {
-      for (const entry of vulnerabilities) {
-        console.log(format(`[${entry.filepath}]`))
 
-        for (const secret of entry.secrets) {
-          console.log(`>> ${secret}`)
-        }
-
-        console.log('')
-      }
-    })
-}
+      const [, from, to] = range
+      found = await scanRepo(process.cwd(), { from, to })
+    } else {
+      found = await scanRepo(process.cwd())
+    }
+    printVulnerabilities(found)
+    process.exit(found.length === 0 ? 0 : 0)
+  })
+  .example('$0 history', 'Scan through all the git repository history')
+  .example('$0 history <start>...<end>', 'Scan the git repository from the "<start>" commit to the "<end>" commit.\n\nNote: The "<start>" commit is not included but "<end>" is')
+  .help('h')
+  .alias('h', 'help')
+  .demandCommand()
+  .argv

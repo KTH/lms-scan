@@ -11,7 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "isomorphic-git": "^0.55.4",
-    "tmp": "^0.1.0"
+    "tmp": "^0.1.0",
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
     "ava": "^2.1.0",
