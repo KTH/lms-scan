@@ -10,6 +10,7 @@
   "bin": "./index.js",
   "license": "MIT",
   "dependencies": {
+    "@kth/canvas-api": "^2.0.0",
     "isomorphic-git": "^0.55.4",
     "tmp": "^0.1.0",
     "yargs": "^13.2.4"
